@@ -9,20 +9,23 @@ app.secret_key = 'idkwhatitis'
 app.config["MONGO_URI"] = "mongodb+srv://omkarr:Omkar786@tbs.inphtk9.mongodb.net/CRUD?retryWrites=true&w=majority"
 mongo = PyMongo(app)
 
+# Serializer function to format user data
 def user_serializer(user) -> dict:
     return {
-        "id": user.get("id", str(user["_id"])),  # Fallback to ObjectId if id is missing
+        "id": user.get("id", str(user["_id"])),
         "name": user["name"],
         "email": user["email"],
         "password": user["password"]
     }
 
+# Function to get the next available user ID
 def get_next_id():
     last_user = mongo.db.user.find().sort("id", -1).limit(1)
-    last_user = list(last_user)  # Convert cursor to list
-    last_id = int(last_user[0]['id']) if last_user else 0  # Convert last_id to int
+    last_user = list(last_user)  
+    last_id = int(last_user[0]['id']) if last_user else 0 
     return last_id + 1
 
+# Route to render index page with user data
 @app.route('/')
 def index():
     section = request.args.get('section', 'create-section')
@@ -31,6 +34,7 @@ def index():
     update_user = request.args.get('update_user')
     return render_template('index.html', users=users, retrieved_user=retrieved_user, update_user=update_user, section=section)
 
+# Route to handle user creation
 @app.route('/users', methods=['POST'])
 def create_user():
     data = request.form.to_dict()
@@ -40,6 +44,7 @@ def create_user():
     flash('User created successfully!', 'success')
     return redirect(url_for('index', section='create-section'))
 
+# Route to retrieve a user by ID
 @app.route('/users/retrieve', methods=['GET'])
 def retrieve_user():
     user_id = request.args.get('id')
@@ -52,6 +57,7 @@ def retrieve_user():
         flash('User not found!', 'danger')
     return redirect(url_for('index', section='read-section'))
 
+# Route to fetch user data for update
 @app.route('/users/fetch_update', methods=['GET'])
 def fetch_user_for_update():
     user_id = request.args.get('id')
@@ -62,6 +68,7 @@ def fetch_user_for_update():
     flash('User not found!', 'danger')
     return redirect(url_for('index', section='update-section'))
 
+# Route to update user data
 @app.route('/users/update', methods=['POST'])
 def update_user():
     user_id = request.form.get('id')
@@ -75,6 +82,7 @@ def update_user():
         flash('User not found!', 'danger')
     return redirect(url_for('index', section='update-section'))
 
+# Route to delete a user
 @app.route('/users/delete', methods=['POST'])
 def delete_user():
     user_id = request.form.get('id')
