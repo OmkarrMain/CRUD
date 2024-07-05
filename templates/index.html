@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center">User Dashboard</h1>
+
+        <!-- Flash Messages -->
+        <div id="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- CRUD Buttons -->
+        <div class="text-center mb-3">
+            <button class="btn btn-primary" onclick="showSection('create-section')">Create User</button>
+            <button class="btn btn-primary" onclick="showSection('read-section')">Retrieve Users</button>
+            <button class="btn btn-primary" onclick="showSection('update-section')">Update User</button>
+            <button class="btn btn-primary" onclick="showSection('delete-section')">Delete User</button>
+        </div>
+
+        <!-- Create User Section -->
+        <div id="create-section" class="crud-section" {% if section !='create-section' %}style="display:none;" {% endif
+            %}>
+            <h2>Create User</h2>
+            <form action="/users" method="POST">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-success">Create</button>
+            </form>
+        </div>
+
+        <!-- Retrieve Users Section -->
+        <div id="read-section" class="crud-section" {% if section !='read-section' %}style="display:none;" {% endif %}>
+            <h2>Retrieve User</h2>
+            <form id="retrieve-form" action="/users/retrieve" method="GET">
+                <div class="form-group">
+                    <label for="retrieve-id">User ID:</label>
+                    <input type="text" class="form-control" id="retrieve-id" name="id">
+                </div>
+                <button type="submit" class="btn btn-primary">Retrieve</button>
+            </form>
+            <div id="user-details">
+                {% if retrieved_user %}
+                <h3>Retrieved User</h3>
+                <p><strong>ID:</strong> {{ retrieved_user.id }}</p>
+                <p><strong>Name:</strong> {{ retrieved_user.name }}</p>
+                <p><strong>Email:</strong> {{ retrieved_user.email }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Update User Section -->
+        <div id="update-section" class="crud-section" {% if section !='update-section' %}style="display:none;" {% endif
+            %}>
+            <h2>Update User</h2>
+            <form action="/users/fetch_update" method="GET">
+                <div class="form-group">
+                    <label for="update-id">User ID:</label>
+                    <input type="text" class="form-control" id="update-id" name="id" required>
+                </div>
+                <button type="submit" class="btn btn-warning">Fetch User</button>
+            </form>
+            {% if update_user %}
+            <form id="update-form" action="/users/update" method="POST">
+                <input type="hidden" name="id" id="update-form-id" value="{{ update_user.id }}">
+                <div class="form-group">
+                    <label for="update-name">Name:</label>
+                    <input type="text" class="form-control" id="update-name" name="name" value="{{ update_user.name }}"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="update-email">Email:</label>
+                    <input type="email" class="form-control" id="update-email" name="email"
+                        value="{{ update_user.email }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="update-password">Password:</label>
+                    <input type="password" class="form-control" id="update-password" name="password">
+                </div>
+                <button type="submit" class="btn btn-warning">Update</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Delete User Section -->
+        <div id="delete-section" class="crud-section" {% if section !='delete-section' %}style="display:none;" {% endif
+            %}>
+            <h2>Delete User</h2>
+            <form action="/users/delete" method="POST">
+                <div class="form-group">
+                    <label for="delete-id">User ID:</label>
+                    <input type="text" class="form-control" id="delete-id" name="id" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.crud-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function hideFlashMessages() {
+            setTimeout(() => {
+                $('#flash-messages').fadeOut('slow');
+            }, 3000);
+        }
+
+        $(document).ready(function () {
+            hideFlashMessages();
+            const section = "{{ section }}";
+            showSection(section);
+        });
+    </script>
+</body>
+
+</html>
